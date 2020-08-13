@@ -9,10 +9,10 @@ from .resources import (
 )
 
 api = Api()
-api.add_resource(NewResource, "/noticias/<int:id>")
+api.add_resource(NewResource, "/noticias/<int:new_id>")
 api.add_resource(NewAllResource, "/noticias/")
 api.add_resource(AuthorAllResource, "/autores/")
-api.add_resource(AuthorResource, "/autores/<int:id>")
+api.add_resource(AuthorResource, "/autores/<int:author_id>")
 api.add_resource(UserAllResource, "/usuarios/")
 api.add_resource(UserResource, "/usuarios/<int:user_id>")
 

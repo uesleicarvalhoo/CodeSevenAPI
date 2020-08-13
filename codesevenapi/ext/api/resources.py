@@ -4,29 +4,13 @@ from flask_restful import Resource
 from flask import request
 from sqlalchemy.exc import OperationalError
 
-from codesevenapi.ext.db.commands import (
-    get_all_new,
-    create_new,
-    get_new,
-    update_new,
-    delete_new,
-    get_all_author,
-    create_author,
-    get_author,
-    update_author,
-    delete_author,
-    get_all_user,
-    create_user,
-    get_user,
-    update_user,
-    delete_user,
-)
+from codesevenapi.ext.db.models import News, Author, User
 
 
 class NewAllResource(Resource):
     def get(self):
         try:
-            data = [new.to_dict() for new in get_all_new()]
+            data = [new.to_dict() for new in News.get_all()]
 
         except OperationalError:
             response = {"message": "Não foi possível obter a lista com as noticias"}
@@ -45,7 +29,7 @@ class NewAllResource(Resource):
             title = data["title"]
             text = data["text"]
 
-            new = create_new(title, text, author_id)
+            new = News.create(title, text, author_id)
 
         except KeyError:
             response = {
@@ -56,6 +40,7 @@ class NewAllResource(Resource):
             response = {
                 "message": "Não foi possível cadastrar a noticia, verifique os parametros informados e tente novamente."
             }
+
         else:
             response = {
                 "message": "Noticia cadastrada com sucesso!",
@@ -66,13 +51,13 @@ class NewAllResource(Resource):
 
 
 class NewResource(Resource):
-    def get(self, id):
+    def get(self, new_id: int):
         try:
-            new = get_new(id)
+            new = News.get_by_id(new_id)
 
         except OperationalError:
             response = {
-                "message": f"Não foi possível localizar a noticia com o ID {id}."
+                "message": f"Não foi possível localizar a noticia com o ID {new_id}."
             }
 
         else:
@@ -84,38 +69,34 @@ class NewResource(Resource):
 
         return response
 
-    def delete(self, id):
+    def delete(self, new_id: int):
         try:
-            new = delete_new(id)
+            new = News.get_by_id(new_id)
 
-        except OperationalError:
-            response = {"message": f"Não foi possível excluir a noticia com o ID {id}"}
-
-        else:
             if new is not None:
-                response = {"message": "Noticia excluida com sucesso!", "data": new}
+                new_data = new.to_dict()
+                new.delete()
+                response = {"message": "Noticia excluida com sucesso!", "data": new_data}
 
             else:
                 response = {
-                    "message": f"Não foi possível localizar os dados da noticia com ID {id}"
+                    "message": f"Não foi possível localizar os dados da noticia com ID {new_id}"
                 }
+
+        except OperationalError:
+            response = {"message": f"Não foi possível excluir a noticia com o ID {new_id}"}
 
         return response
 
-    def put(self, id):
+    def put(self, new_id: int):
         data = json.loads(request.data)
 
         try:
-            title = data.get("title", None)
-            text = data.get("text", None)
-            author_id = data.get("author_id", None)
-            new = update_new(id, title, text, author_id)
+            new = News.get_by_id(new_id)
 
-        except OperationalError:
-            response = {"message": f"Erro ao atualizar dados da Noticia com o ID {id}"}
-
-        else:
             if new is not None:
+                new.update(data)
+
                 response = {
                     "message": "Dados atualizados com sucesso!",
                     "data": new.to_dict(),
@@ -123,8 +104,11 @@ class NewResource(Resource):
 
             else:
                 response = {
-                    "message": f"Não foi possível localizar os dados da Noticia com o ID {id}"
+                    "message": f"Não foi possível localizar os dados da Noticia com o ID {new_id}"
                 }
+
+        except OperationalError:
+            response = {"message": f"Erro ao atualizar dados da Noticia com o ID {new_id}"}
 
         return response
 
@@ -132,7 +116,7 @@ class NewResource(Resource):
 class AuthorAllResource(Resource):
     def get(self):
         try:
-            authors = get_all_author()
+            authors = Author.get_all()
 
         except OperationalError:
             response = {"message": "Ocorreu um erro ao extrair a lista de Autores"}
@@ -148,7 +132,7 @@ class AuthorAllResource(Resource):
 
         try:
             name = data["name"]
-            author = create_author(name)
+            author = Author.create(name=name)
 
         except KeyError:
             response = {"message": 'Os parametros ["name"] são obrigatorios.'}
@@ -169,12 +153,12 @@ class AuthorAllResource(Resource):
 
 
 class AuthorResource(Resource):
-    def get(self, id):
+    def get(self, author_id):
         try:
-            author = get_author(id)
+            author = Author.get_by_id(author_id)
 
         except OperationalError:
-            response = {"message": f"Não foi possível localizar o Autor com o ID {id}."}
+            response = {"message": f"Não foi possível localizar o Autor com o ID {author_id}."}
 
         else:
             if author is None:
@@ -184,35 +168,32 @@ class AuthorResource(Resource):
 
         return response
 
-    def delete(self, id):
+    def delete(self, author_id: int):
         try:
-            new = delete_author(id)
+            author = Author.get_by_id(author_id)
+            if author is not None:
+                author_data = author.to_dict()
+                author.delete()
+                response = {"message": "Autor excluido com sucesso!", "data": author_data}
 
-        except OperationalError:
-            response = {"message": f"Não foi possível excluir o Autor com o ID {id}"}
-
-        else:
-            if new is not None:
-                response = {"message": "Autor excluido com sucesso!", "data": new}
             else:
                 response = {
-                    "message": f"Não foi possível localizar o Autor com o ID {id}"
+                    "message": f"Não foi possível localizar o Autor com o ID {author_id}"
                 }
+
+        except OperationalError:
+            response = {"message": f"Não foi possível excluir o Autor com o ID {author_id}"}
 
         return response
 
-    def put(self, id):
+    def put(self, author_id: int):
         data = json.loads(request.data)
 
         try:
-            name = data.get("name", None)
-            author = update_author(id, name)
+            author = Author.get_by_id(author_id)
 
-        except OperationalError:
-            response = {"message": f"Erro ao atualizar dados do Autor com o ID {id}"}
-
-        else:
             if author is not None:
+                author.update(data)
                 response = {
                     "message": "Dados atualizados com sucesso!",
                     "data": author.to_dict(),
@@ -220,16 +201,19 @@ class AuthorResource(Resource):
 
             else:
                 response = {
-                    "message": f"Não foi possível localizar os dados do Autor com o ID {id}"
+                    "message": f"Não foi possível localizar os dados do Autor com o ID {author_id}"
                 }
+
+        except OperationalError:
+            response = {"message": f"Erro ao atualizar dados do Autor com o ID {author_id}"}
 
         return response
 
 
 class UserResource(Resource):
-    def get(self, user_id):
+    def get(self, user_id: int):
         try:
-            user = get_user(user_id)
+            user = User.get_by_id(user_id)
 
         except OperationalError:
             response = {
@@ -245,19 +229,15 @@ class UserResource(Resource):
 
         return response
 
-    def put(self, user_id):
+    def put(self, user_id: int):
         data = json.loads(request.data)
 
         try:
-            password = data.get("password", None)
-            admin = data.get("admin", None)
-            user = update_user(user_id, password, admin)
+            data.pop('username', None)
+            user = User.get_by_id(user_id)
 
-        except OperationalError:
-            response = {"message": f"Erro ao atualizar dados do Autor com o ID {id}"}
-
-        else:
             if user is not None:
+                user.update(data)
                 response = {
                     "message": "Dados atualizados com sucesso!",
                     "data": user.to_dict(),
@@ -265,25 +245,29 @@ class UserResource(Resource):
 
             else:
                 response = {
-                    "message": f"Não foi possível localizar os dados do Usuario com o ID {id}"
+                    "message": f"Não foi possível localizar os dados do Usuario com o ID {user_id}"
                 }
+
+        except OperationalError:
+            response = {"message": f"Erro ao atualizar dados do Autor com o ID {user_id}"}
 
         return response
 
-    def delete(self, user_id):
+    def delete(self, user_id: int):
         try:
-            user = delete_user(user_id)
-
-        except OperationalError:
-            response = {"message": f"Não foi possível excluir o Usuario com o ID {id}"}
-
-        else:
+            user = User.get_by_id(user_id)
             if user is not None:
-                response = {"message": "Usuario excluido com sucesso!", "data": user}
+                user_data = user.to_dict()
+                user.delete()
+                response = {"message": "Usuario excluido com sucesso!", "data": user_data}
+
             else:
                 response = {
-                    "message": f"Não foi possível localizar o Usuario com o ID {id}"
+                    "message": f"Não foi possível localizar o Usuario com o ID {user_id}"
                 }
+
+        except OperationalError:
+            response = {"message": f"Não foi possível excluir o Usuario com o ID {user_id}"}
 
         return response
 
@@ -291,7 +275,7 @@ class UserResource(Resource):
 class UserAllResource(Resource):
     def get(self):
         try:
-            data = [user.to_dict() for user in get_all_user()]
+            data = [user.to_dict() for user in User.get_all()]
 
         except OperationalError:
             response = {"message": "Não foi possível obter a lista de usuarios"}
@@ -310,7 +294,7 @@ class UserAllResource(Resource):
             password = data["password"]
             admin = data.get("admin", False)
 
-            user = create_user(username, password, admin)
+            user = User.create(username, password, admin)
 
         except KeyError:
             response = {

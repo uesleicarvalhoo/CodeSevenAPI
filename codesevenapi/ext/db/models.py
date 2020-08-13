@@ -11,7 +11,7 @@ class News(db.Model):
     author = db.relationship("Author", foreign_keys=author_id)
 
     def __repr__(self):
-        return f"<New - {self.title.title()}>"
+        return f"<New - ID{self.id}>"
 
     def to_dict(self):
         data = {
@@ -22,6 +22,35 @@ class News(db.Model):
         }
 
         return data
+
+    @staticmethod
+    def create(title: str, text: str, author_id: str):
+        new = News(title=title, text=text, author_id=author_id)
+        db.session.add(new)
+        db.session.commit()
+
+        return new
+
+    @staticmethod
+    def get_all():
+        return News.query.all()
+
+    @staticmethod
+    def get_by_id(new_id: int):
+        return News.query.filter_by(id=new_id).first()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def update(self, **kwargs):
+        self.title = kwargs.get('title', self.title)
+        self.text = kwargs.get('text', self.text)
+        self.author_id = kwargs.get('author_id', self.author_id)
+
+        db.session.commit()
+
+        return self
 
 
 class Author(db.Model):
@@ -37,6 +66,34 @@ class Author(db.Model):
 
         return data
 
+    @staticmethod
+    def create(name: str):
+        author = Author(name=name)
+        db.session.add(author)
+        db.session.commit()
+
+        return author
+
+    @staticmethod
+    def get_all():
+        return Author.query.all()
+
+    @staticmethod
+    def get_by_id(author_id: int):
+        return Author.query.filter_by(id=author_id).first()
+
+    def delete(self):
+        News.query.filter_by(author_id=self.id).delete()
+        db.session.delete(self)
+        db.session.commit()
+
+    def update(self, **kwargs):
+        self.name = kwargs.get('name', self.name)
+
+        db.session.commit()
+
+        return self
+
 
 class User(db.Model):
     __tablename__ = "user"
@@ -44,6 +101,9 @@ class User(db.Model):
     username = db.Column("username", db.Unicode, unique=True)
     password = db.Column("password", db.Unicode)
     admin = db.Column("admin", db.Boolean)
+
+    def __repr__(self):
+        return f"<User - {self.username.title()}>"
 
     def to_dict(self, password=False):
         data = {
@@ -56,3 +116,33 @@ class User(db.Model):
             data["password"] = self.password
 
         return data
+
+    @staticmethod
+    def create(username: str, password: str, admin=False):
+        user = User(username=username, password=password, admin=admin)
+
+        db.session.add(user)
+        db.session.commit()
+
+        return user
+
+    @staticmethod
+    def get_all():
+        return User.query.all()
+
+    @staticmethod
+    def get_by_id(user_id: int):
+        return User.query.filter_by(id=user_id).first()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def update(self, **kwargs):
+        self.username = kwargs.get('username', self.username)
+        self.password = kwargs.get('password', self.password)
+        self.admin = kwargs.get('admin', self.admin)
+
+        db.session.commit()
+
+        return self

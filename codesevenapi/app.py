@@ -16,3 +16,4 @@ def create_app():
 
 # Utilizar o Dynaconf para as configurações(?)
 # Fazer a autenticação por login
+# Fazer o Cli
