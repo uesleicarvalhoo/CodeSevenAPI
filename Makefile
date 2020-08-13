@@ -8,5 +8,11 @@ install-dev:
 	pip3 install -r requirements-dev.txt
 
 format:
-	isort */**.py
-	black */**.py
+	isort codesevenapi/*.py
+	isort codesevenapi/**/*.py
+	black codesevenapi/*.py
+	black codesevenapi/**/*.py
+	black codesevenapi/***/**/*.py
+
+setup-install:
+	python3 setup.py install

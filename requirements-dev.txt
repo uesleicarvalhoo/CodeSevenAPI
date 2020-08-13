@@ -1,6 +1,3 @@
-flask
-flask-restful
-flask-sqlalchemy
-flake8
 black
+flake8
 isort
