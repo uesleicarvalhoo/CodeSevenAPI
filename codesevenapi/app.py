@@ -15,5 +15,7 @@ def create_app():
 
 
 # Utilizar o Dynaconf para as configurações(?)
-# Fazer a autenticação por login
-# Fazer o Cli
+# Testar o setup.py
+# Documentar o código
+# Pssar para o banco de dados para o MongoDB
+# Resolver o problema do SQLAlchemy não validar a ForeignKey
