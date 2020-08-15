@@ -11,10 +11,14 @@ from flask_login import login_required, current_user
 class NewAllResource(Resource):
     def get(self):
         try:
-            data = [new.to_dict() for new in News.get_all()]
+            author_name = request.headers.get("author_name", None)
+            title = request.headers.get("title", None)
+
+            data = News.get_all(title=title, author_name=author_name)
+            data = [new.to_dict() for new in data]
 
         except OperationalError:
-            response = {"message": "Não foi possível obter a lista com as noticias"}
+            response = {"message": "Não foi possível obter a lista com as noticias."}
 
         else:
             response = data
@@ -34,22 +38,32 @@ class NewAllResource(Resource):
             new = News.create(title, text, author_id)
 
         except KeyError:
+            status = 401
             response = {
                 "message": 'Informe todos os parametros: ["title", "text" e "author_id"]'
             }
 
         except OperationalError:
+            status = 401
             response = {
                 "message": "Não foi possível cadastrar a noticia, verifique os parametros informados e tente novamente."
             }
 
         else:
-            response = {
-                "message": "Noticia cadastrada com sucesso!",
-                "new": new.to_dict(),
-            }
+            if new is not None:
+                response = {
+                    "message": "Noticia cadastrada com sucesso!",
+                    "new": new.to_dict(),
+                }
 
-        return response, 201
+            else:
+                response = {
+                    new.get(
+                        "message", "Não foi possível cadastrar a noticia.\n%s" % new
+                    )
+                }
+
+        return response, status
 
 
 class NewResource(Resource):
@@ -64,7 +78,7 @@ class NewResource(Resource):
 
         else:
             if new is None:
-                response = {}
+                response = {"message": "Noticia não cadastrada"}
 
             else:
                 response = new.to_dict()
@@ -86,7 +100,7 @@ class NewResource(Resource):
 
             else:
                 response = {
-                    "message": f"Não foi possível localizar os dados da noticia com ID {new_id}"
+                    "message": f"Não foi possível localizar os dados da noticia com ID {new_id}."
                 }
 
         except OperationalError:
@@ -176,7 +190,7 @@ class AuthorResource(Resource):
 
         else:
             if author is None:
-                response = {}
+                response = {"message:" f"Não existe nenhum Autor com o ID {author_id}."}
 
             else:
                 response = author.to_dict()
@@ -246,7 +260,9 @@ class UserResource(Resource):
 
         else:
             if user is None:
-                response = {}
+                response = {
+                    "message": f"Não existe nenhum usuario cadastrado com o ID {user_id}."
+                }
 
             else:
                 response = user.to_dict()
@@ -264,6 +280,11 @@ class UserResource(Resource):
                 "message": "Somente administradores estão autorizados a editar dados de outros usuarios."
             }
 
+        elif current_user.is_admin and "admin" in data.keys():
+            status = 401
+            response = {
+                "message": "Apenas administradores podem alterar os status de admin."
+            }
         else:
             try:
                 data.pop("username", None)
@@ -278,12 +299,12 @@ class UserResource(Resource):
 
                 else:
                     response = {
-                        "message": f"Não foi possível localizar os dados do Usuario com o ID {user_id}"
+                        "message": f"Não foi possível localizar os dados do Usuario com o ID {user_id}."
                     }
 
             except OperationalError:
                 response = {
-                    "message": f"Erro ao atualizar dados do Autor com o ID {user_id}"
+                    "message": f"Erro desconhecido ao atualizar dados do Autor com o ID {user_id}."
                 }
 
         return response, status
@@ -310,12 +331,12 @@ class UserResource(Resource):
 
                 else:
                     response = {
-                        "message": f"Não foi possível localizar o Usuario com o ID {user_id}"
+                        "message": f"Não foi possível localizar o Usuario com o ID {user_id}."
                     }
 
             except OperationalError:
                 response = {
-                    "message": f"Não foi possível excluir o Usuario com o ID {user_id}"
+                    "message": f"Não foi possível excluir o Usuario com o ID {user_id}."
                 }
 
         return response, status
@@ -334,7 +355,7 @@ class UserAllResource(Resource):
                 data = [user.to_dict() for user in User.get_all()]
 
             except OperationalError:
-                response = {"message": "Não foi possível obter a lista de usuarios"}
+                response = {"message": "Não foi possível obter a lista de usuarios."}
 
             else:
                 response = data
@@ -367,7 +388,7 @@ class UserAllResource(Resource):
 
             except OperationalError:
                 response = {
-                    "message": "Não foi possível cadastrar o Usuario, verifique os parametros informados e tente novamente."
+                    "message": "Não foi possível cadastrar o Usuario, verifique os parametros informados e tente novamente."  # noqa
                 }
 
             except IntegrityError:

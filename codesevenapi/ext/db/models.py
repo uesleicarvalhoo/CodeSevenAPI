@@ -33,7 +33,7 @@ class Author(db.Model):
 
     @staticmethod
     def get_by_id(author_id: int):
-        return Author.query.filter_by(id=author_id).first()
+        return Author.query.filter(Author.id == author_id).first()
 
     def delete(self):
         db.session.delete(self)
@@ -72,26 +72,40 @@ class News(db.Model):
             "title": self.title,
             "text": self.text,
             "author_id": self.author_id,
-            "author": self.author.name
+            "author": self.author.name,
         }
 
         return data
 
     @staticmethod
     def create(title: str, text: str, author_id: str):
-        new = News(title=title, text=text, author_id=author_id)
-        db.session.add(new)
-        db.session.commit()
+        if Author.get_by_id(author_id) is not None:
+            new = News(title=title, text=text, author_id=author_id)
+            db.session.add(new)
+            db.session.commit()
 
-        return new
+            return new
+
+        else:
+            return f"Não existe nenhum Autor cadastrado com o ID {author_id}"
 
     @staticmethod
-    def get_all():
-        return News.query.all()
+    def get_all(title=None, author_name=None):
+        query = News.query
+
+        if title is not None:
+            query = query.filter(News.title.like(f"%{title}%"))
+
+        if author_name is not None:
+            query = query.join(Author, News.author_id == Author.id).filter(
+                Author.name.like(f"%{author_name}%")
+            )
+
+        return query.all()
 
     @staticmethod
     def get_by_id(new_id: int):
-        return News.query.filter_by(id=new_id).first()
+        return News.query.filter(News.id == new_id).first()
 
     def delete(self):
         db.session.delete(self)
@@ -143,7 +157,7 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def get_by_id(user_id: int):
-        return User.query.filter_by(id=user_id).first()
+        return User.query.filter(User.id == user_id).first()
 
     def delete(self):
         db.session.delete(self)

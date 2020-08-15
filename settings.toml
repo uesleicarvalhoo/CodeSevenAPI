@@ -1,0 +1,20 @@
+[default]
+DEBUG = false
+SQLALCHEMY_TRACK_MODIFICATIONS = false
+
+EXTENSIONS = [
+    "codesevenapi.ext.api:init_app", 
+    "codesevenapi.ext.auth:init_app", 
+    "codesevenapi.ext.cli:init_app", 
+    "codesevenapi.ext.db:init_app"
+]
+
+
+[development]
+DEBUG_MODE = true
+SQLALCHEMY_DATABASE_URI = "sqlite:///codesevenapi.db"
+JSON_AS_ASCII = false
+
+
+[production]
+DEBUG_MODE = false

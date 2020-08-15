@@ -1,3 +1,4 @@
+dynaconf
 flask
 flask-httpauth
 flask-restful

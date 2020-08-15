@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from tabulate import tabulate
 
 from codesevenapi.ext.db.commands import create_db, delete_all
-from codesevenapi.ext.db.models import User, News, Author
+from codesevenapi.ext.db.models import Author, News, User
 
 
 def init_app(app):
@@ -20,13 +20,7 @@ def init_app(app):
 @click.option("--password", "-p")
 @click.option("--admin", "-a", is_flag=True, default=False)
 def add_user(username: str, password: str, admin: bool):
-    """Create a user
-
-    Args:
-        username (str): username
-        password (str): password
-        admin (bool): System admin
-    """
+    """Create a User, flag --admin to create a administrator """
     try:
         User.create(username, password, admin)
 
@@ -56,15 +50,20 @@ def list_all_users():
         )
     )
 
+
 def list_all_news():
     "List all News: ID, Title, Text, Author, Create at."
     click.echo(
         tabulate(
-            [[new.id, new.title, new.text, new.author.name, new.create_at] for new in News.query.all()],
+            [
+                [new.id, new.title, new.text, new.author.name, new.create_at]
+                for new in News.query.all()
+            ],
             headers=["ID", "Title", "Text", "Author", "Create at"],
             tablefmt="orgtbl",
         )
     )
+
 
 def list_all_authors():
     """List all Authors: ID, Name."""
