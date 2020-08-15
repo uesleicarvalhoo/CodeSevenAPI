@@ -1,6 +1,7 @@
 [default]
-DEBUG = false
 SQLALCHEMY_TRACK_MODIFICATIONS = false
+JSON_AS_ASCII = false
+
 
 EXTENSIONS = [
     "codesevenapi.ext.api:init_app", 
@@ -13,8 +14,8 @@ EXTENSIONS = [
 [development]
 DEBUG_MODE = true
 SQLALCHEMY_DATABASE_URI = "sqlite:///codesevenapi.db"
-JSON_AS_ASCII = false
 
 
 [production]
 DEBUG_MODE = false
+SQLALCHEMY_DATABASE_URI = "sqlite:///codesevenapi.db"

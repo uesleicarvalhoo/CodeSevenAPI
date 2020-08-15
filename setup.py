@@ -10,6 +10,6 @@ setup(
     packages=find_packages(),
     include_packages=True,
     install_requires=read('requirements.txt'),
-    extra_requires={"dev": "requirements-dev.txt"},
+    extra_requires={"dev": read("requirements-dev.txt")},
 
 )

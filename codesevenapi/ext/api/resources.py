@@ -10,6 +10,12 @@ from flask_login import login_required, current_user
 
 class NewAllResource(Resource):
     def get(self):
+        """
+            Get the list of all news tell the headers author_name and / or title to filter the results
+
+        Returns:
+            dict: Dict content all news
+        """
         try:
             author_name = request.headers.get("author_name", None)
             title = request.headers.get("title", None)
@@ -27,6 +33,7 @@ class NewAllResource(Resource):
 
     @login_required
     def post(self):
+        """Create a New, need author_id, title and text in request.data"""
         data = json.loads(request.data)
         status = 200
 
@@ -68,6 +75,8 @@ class NewAllResource(Resource):
 
 class NewResource(Resource):
     def get(self, new_id: int):
+        """Get the news through the given ID"""
+
         try:
             new = News.get_by_id(new_id)
 
@@ -87,6 +96,7 @@ class NewResource(Resource):
 
     @login_required
     def delete(self, new_id: int):
+        """Delete the New by ID"""
         try:
             new = News.get_by_id(new_id)
 
@@ -112,6 +122,7 @@ class NewResource(Resource):
 
     @login_required
     def put(self, new_id: int):
+        """Update the New by ID, inform the title, text and author_id in request.data"""
         data = json.loads(request.data)
 
         try:
@@ -140,6 +151,8 @@ class NewResource(Resource):
 
 class AuthorAllResource(Resource):
     def get(self):
+        """ Get the list of all Authors"""
+
         try:
             authors = Author.get_all()
 
@@ -153,6 +166,7 @@ class AuthorAllResource(Resource):
 
     @login_required
     def post(self):
+        """Create a Author, need author_name in request.data"""
         data = json.loads(request.data)
         status = 200
 
@@ -179,7 +193,9 @@ class AuthorAllResource(Resource):
 
 
 class AuthorResource(Resource):
-    def get(self, author_id):
+    def get(self, author_id: int):
+        """Get the Authors through the given ID"""
+
         try:
             author = Author.get_by_id(author_id)
 
@@ -199,6 +215,7 @@ class AuthorResource(Resource):
 
     @login_required
     def delete(self, author_id: int):
+        """Delete the Author by ID"""
         try:
             author = Author.get_by_id(author_id)
             if author is not None:
@@ -223,6 +240,8 @@ class AuthorResource(Resource):
 
     @login_required
     def put(self, author_id: int):
+        """Update the Author by ID, inform the author_name in request.data"""
+
         data = json.loads(request.data)
 
         try:
@@ -250,6 +269,8 @@ class AuthorResource(Resource):
 
 class UserResource(Resource):
     def get(self, user_id: int):
+        """Get the Authors through the given ID"""
+
         try:
             user = User.get_by_id(user_id)
 
@@ -271,6 +292,7 @@ class UserResource(Resource):
 
     @login_required
     def put(self, user_id: int):
+        """Update the User by ID, inform the password in request.data"""
         status = 200
         data = json.loads(request.data)
 
@@ -311,6 +333,7 @@ class UserResource(Resource):
 
     @login_required
     def delete(self, user_id: int):
+        """Delete the New by ID, admin only"""
         status = 200
         if not current_user.is_admin:
             status = 401
@@ -345,6 +368,8 @@ class UserResource(Resource):
 class UserAllResource(Resource):
     @login_required
     def get(self):
+        """Get the list of all Users, admin only"""
+
         if not current_user.is_admin:
             response = {
                 "message": "Somente administradores estão autorizados a obter os dados dos usuarios."
@@ -364,6 +389,7 @@ class UserAllResource(Resource):
 
     @login_required
     def post(self):
+        """Create a User, need username and password in request.data"""
         data = json.loads(request.data)
         status = 200
 

@@ -4,11 +4,13 @@ run:
 format:
 	isort **/*.py
 	isort codesevenapi/**/*.py
+	black codesevenapi/***/**/*.py
 	black **/*.py
 	black codesevenapi/**/*.py
+	black codesevenapi/***/**/*.py
 
-test:
-	pytest tests/ -v 
+install:
+	pip install -e .[dev] --upgrade --no-cache
 
 clean:
 	@find ./ -name '*.pyc' -exec rm -f {} \;
@@ -20,5 +22,4 @@ clean:
 	rm -rf htmlcov
 	rm -rf .tox/
 	rm -rf docs/_build
-	pip install -e .[dev] --upgrade --no-cache
 	rm -rf *.egg-info

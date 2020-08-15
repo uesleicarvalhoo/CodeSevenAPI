@@ -55,7 +55,7 @@ class News(db.Model):
     create_at = db.Column("create_at", db.DateTime, default=dt.datetime.utcnow)
     author_id = db.Column(
         "author",
-        db.Unicode,
+        db.Integer,
         db.ForeignKey("author.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

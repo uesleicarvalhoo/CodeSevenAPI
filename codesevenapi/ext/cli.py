@@ -7,6 +7,7 @@ from codesevenapi.ext.db.models import Author, News, User
 
 
 def init_app(app):
+    """Initialize the CLI commands"""
     app.cli.add_command(app.cli.command()(create_db))
     app.cli.add_command(app.cli.command()(delete_all))
     app.cli.add_command(app.cli.command()(add_user))

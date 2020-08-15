@@ -2,5 +2,4 @@ dynaconf
 flask
 flask-httpauth
 flask-restful
-flask-sqlalchemy
 tabulate
