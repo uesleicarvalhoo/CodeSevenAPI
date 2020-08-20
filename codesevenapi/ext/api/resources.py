@@ -34,7 +34,7 @@ class NewAllResource(Resource):
     @login_required
     def post(self):
         """Create a New, need author_id, title and text in request.data"""
-        data = json.loads(request.data)
+        data = json.loads(request.get_data(as_text=True))
         status = 200
 
         try:
@@ -42,7 +42,7 @@ class NewAllResource(Resource):
             title = data["title"]
             text = data["text"]
 
-            new = News.create(title, text, author_id)
+            new, status = News.create(title, text, author_id, current_user.id)
 
         except KeyError:
             status = 401
@@ -58,10 +58,15 @@ class NewAllResource(Resource):
 
         else:
             if new is not None:
-                response = {
-                    "message": "Noticia cadastrada com sucesso!",
-                    "new": new.to_dict(),
-                }
+                if status == 201:
+                    response = {
+                        "message": "Noticia cadastrada com sucesso!",
+                        "new": new.to_dict(),
+                    }
+                else:
+                    response = {
+                        "message": new
+                    }
 
             else:
                 response = {
@@ -123,7 +128,7 @@ class NewResource(Resource):
     @login_required
     def put(self, new_id: int):
         """Update the New by ID, inform the title, text and author_id in request.data"""
-        data = json.loads(request.data)
+        data = json.loads(request.get_data(as_text=True))
 
         try:
             new = News.get_by_id(new_id)
@@ -167,7 +172,7 @@ class AuthorAllResource(Resource):
     @login_required
     def post(self):
         """Create a Author, need author_name in request.data"""
-        data = json.loads(request.data)
+        data = json.loads(request.get_data(as_text=True))
         status = 200
 
         try:
@@ -242,7 +247,7 @@ class AuthorResource(Resource):
     def put(self, author_id: int):
         """Update the Author by ID, inform the author_name in request.data"""
 
-        data = json.loads(request.data)
+        data = json.loads(request.get_data(as_text=True))
 
         try:
             author = Author.get_by_id(author_id)
@@ -294,7 +299,7 @@ class UserResource(Resource):
     def put(self, user_id: int):
         """Update the User by ID, inform the password in request.data"""
         status = 200
-        data = json.loads(request.data)
+        data = json.loads(request.get_data(as_text=True))
 
         if not int(user_id) == current_user.id and current_user.is_admin:
             status = 401
@@ -390,7 +395,7 @@ class UserAllResource(Resource):
     @login_required
     def post(self):
         """Create a User, need username and password in request.data"""
-        data = json.loads(request.data)
+        data = json.loads(request.get_data(as_text=True))
         status = 200
 
         if not current_user.is_admin:

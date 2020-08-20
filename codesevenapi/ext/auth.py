@@ -13,7 +13,7 @@ def init_app(app):
     """Init the Flask-login extension"""
     login_manager.init_app(app)
 
-    @app.route("/login/", methods=["POST", "GET"])
+    @app.route("/login", methods=["POST", "GET"])
     def validate_user():
         """Function used by Flask-login to validate the user"""
 
@@ -23,7 +23,7 @@ def init_app(app):
             }
 
         elif request.method == "POST":
-            data = json.loads(request.data)
+            data = json.loads(request.get_data(as_text=True))
             username = data.get("username", None)
             password = data.get("password", None)
 
@@ -51,14 +51,14 @@ def init_app(app):
                         "message": "Credenciais invalidas, verifique seus dados e tente novamente."
                     }
 
-        return response
+        return jsonify(response)
 
-    @app.route("/logout/", methods=["GET"])
+    @app.route("/logout", methods=["GET"])
     @login_required
     def logout():
         """End the User session"""
         logout_user()
-        return {"message": "Sessão encerrada!"}
+        return jsonify({"message": "Sessão encerrada!"})
 
 
 @login_manager.user_loader

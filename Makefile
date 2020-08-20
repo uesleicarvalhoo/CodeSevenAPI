@@ -23,3 +23,6 @@ clean:
 	rm -rf .tox/
 	rm -rf docs/_build
 	rm -rf *.egg-info
+
+test:
+	FLASK_ENV=test pytest tests/ -v

@@ -53,6 +53,10 @@ class News(db.Model):
     title = db.Column("title", db.Unicode)
     text = db.Column("text", db.Unicode)
     create_at = db.Column("create_at", db.DateTime, default=dt.datetime.utcnow)
+    create_by = db.Column(
+        "create_by", db.Integer, db.ForeignKey("user.id"), nullable=False, index=True
+    )
+
     author_id = db.Column(
         "author",
         db.Integer,
@@ -62,6 +66,7 @@ class News(db.Model):
     )
 
     author = db.relationship("Author", backref="author")
+    user = db.relationship("User", backref="user")
 
     def __repr__(self):
         return f"<New - ID{self.id}>"
@@ -71,23 +76,29 @@ class News(db.Model):
             "id": self.id,
             "title": self.title,
             "text": self.text,
-            "author_id": self.author_id,
-            "author": self.author.name,
+            "author": {
+                "id": self.author_id,
+                "name": self.author.name
+            },
+            "create_by": {
+                "user_id": self.user.id,
+                "user_name": self.user.username
+            },
         }
 
         return data
 
     @staticmethod
-    def create(title: str, text: str, author_id: str):
+    def create(title: str, text: str, author_id: str, user_id: int):
         if Author.get_by_id(author_id) is not None:
-            new = News(title=title, text=text, author_id=author_id)
+            new = News(title=title, text=text, author_id=author_id, create_by=user_id)
             db.session.add(new)
             db.session.commit()
 
-            return new
+            return new, 201
 
         else:
-            return f"Não existe nenhum Autor cadastrado com o ID {author_id}"
+            return f"Não existe nenhum Autor cadastrado com o ID {author_id}", 200
 
     @staticmethod
     def get_all(title=None, author_name=None):

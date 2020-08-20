@@ -19,3 +19,8 @@ SQLALCHEMY_DATABASE_URI = "sqlite:///codesevenapi.db"
 [production]
 DEBUG_MODE = false
 SQLALCHEMY_DATABASE_URI = "sqlite:///codesevenapi.db"
+
+
+[test]
+DEBUG_MODE = false
+SQLALCHEMY_DATABASE_URI = "sqlite:///codesevenapi.db"
